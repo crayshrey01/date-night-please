@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>date night please.</title>
+<style>
+  :root{
+    --pink:#ff6f9f; --hot:#ff3f7f; --cream:#fff8f2; --ink:#3a2430;
+    --soft:#ffe4ee; --white:#fff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", system-ui, sans-serif;
+    color:var(--ink); background:linear-gradient(135deg,#fff8f2 0%,#ffe7f0 100%);
+    display:flex; align-items:center; justify-content:center; overflow-x:hidden;
+  }
+  .app{width:min(920px,94vw); padding:28px 0; position:relative}
+  .card{
+    background:rgba(255,255,255,.88); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,111,159,.18); border-radius:32px; padding:clamp(26px,5vw,58px);
+    box-shadow:0 24px 80px rgba(105,36,65,.14); text-align:center;
+  }
+  .eyebrow{font-size:.8rem; letter-spacing:.18em; text-transform:uppercase; color:var(--hot); font-weight:800}
+  h1{font-size:clamp(3rem,9vw,6.6rem); line-height:.9; margin:14px 0 18px; letter-spacing:-.06em}
+  h2{font-size:clamp(2rem,5vw,3.4rem); line-height:1; margin:12px 0 18px; letter-spacing:-.04em}
+  p{font-size:1.08rem; line-height:1.65; max-width:650px; margin:0 auto 20px}
+  .subtitle{font-size:1.25rem}
+  .pill-row{display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:28px auto}
+  .pill{background:var(--soft); padding:11px 16px; border-radius:999px; font-weight:750}
+  button{
+    border:0; border-radius:999px; padding:15px 28px; font:inherit; font-weight:800;
+    cursor:pointer; transition:.18s ease; margin:7px;
+  }
+  button:hover{transform:translateY(-2px) scale(1.02)}
+  .primary{background:var(--hot); color:white; box-shadow:0 10px 24px rgba(255,63,127,.25)}
+  .secondary{background:#fff0f5; color:var(--hot); border:1px solid #ffd0df}
+  .tiny{font-size:.86rem; opacity:.7; margin-top:12px}
+  .hidden{display:none}
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(54,24,39,.38); display:flex; align-items:center; justify-content:center;
+    padding:20px; z-index:20;
+  }
+  .modal{max-width:560px; width:100%; background:white; border-radius:30px; padding:36px; text-align:center; box-shadow:0 30px 100px rgba(0,0,0,.2)}
+  .emoji{font-size:3.3rem; margin-bottom:8px}
+  .cocker{font-size:5.8rem; line-height:1; margin:8px 0 4px; filter:drop-shadow(0 10px 8px rgba(80,30,50,.12));}
+  .calendar-wrap{margin:28px auto 10px; max-width:520px; text-align:left}
+  label{display:block; font-weight:800; margin-bottom:8px}
+  input[type=date]{
+    width:100%; padding:16px 18px; border:2px solid #ffd0df; border-radius:16px;
+    font:inherit; color:var(--ink); background:#fffafb;
+  }
+  .success{position:relative; overflow:hidden}
+  .success h2{position:relative; z-index:2}
+  .success p{position:relative; z-index:2}
+  .balloon{
+    position:fixed; width:46px; height:58px; border-radius:50% 50% 45% 45%;
+    background:#ff6f9f; animation:float 7s linear infinite; opacity:.88; z-index:1;
+  }
+  .balloon:after{content:""; position:absolute; width:1px; height:70px; background:#d86b8f; left:50%; top:56px}
+  @keyframes float{from{transform:translateY(110vh) rotate(-6deg)}to{transform:translateY(-130vh) rotate(8deg)}}
+  .heart{position:fixed; pointer-events:none; animation:rise 2.6s ease-out forwards; z-index:30}
+  @keyframes rise{0%{transform:translateY(0) scale(.7);opacity:0}15%{opacity:1}100%{transform:translateY(-180px) scale(1.2);opacity:0}}
+  .footer{margin-top:14px; font-size:.8rem; opacity:.55}
+
+  .dexter-art{width:min(330px,72vw); height:auto; display:block; margin:10px auto 2px;
+    filter:drop-shadow(0 15px 12px rgba(85,38,48,.15))}
+  .quiz-progress{height:8px; background:#ffe3ed; border-radius:99px; overflow:hidden; margin:18px auto 24px; max-width:520px}
+  .quiz-progress span{display:block; height:100%; width:25%; background:linear-gradient(90deg,#ff6f9f,#ff3f7f); border-radius:99px; transition:width .35s ease}
+  .quiz-answer{display:block; width:min(620px,100%); margin:12px auto; text-align:left; background:#fff4f8;
+    border:2px solid #ffd3e2; color:var(--ink); border-radius:20px; padding:17px 20px; font-weight:750}
+  .quiz-answer:hover{border-color:#ff6f9f; background:#ffeaf2}
+  .quiz-answer.correct{background:#eaf9ef; border-color:#83c99a}
+  .quiz-answer.wrong{background:#fff0f0; border-color:#ff9b9b}
+
+  html { -webkit-text-size-adjust: 100%; }
+  body { min-height: 100svh; overflow-x: hidden; align-items:flex-start; }
+  button, input { -webkit-tap-highlight-color: transparent; }
+  button { touch-action: manipulation; min-height: 52px; }
+  .app { width: min(920px, calc(100% - 28px)); padding:
+    max(12px, env(safe-area-inset-top)) 0
+    max(24px, env(safe-area-inset-bottom)); }
+  .card { width: 100%; padding: clamp(22px, 6vw, 58px); }
+  h1 { font-size: clamp(2.8rem, 13vw, 6.6rem); }
+  h2 { font-size: clamp(1.9rem, 8vw, 3.4rem); }
+  p { font-size: clamp(1rem, 4.2vw, 1.08rem); }
+  .pill-row { gap: 8px; }
+  .pill { padding: 10px 13px; font-size: .95rem; }
+  .quiz-answer { min-height: 58px; font-size: .98rem; line-height: 1.3; }
+  input[type=date] { min-height: 56px; font-size: 16px; }
+  .modal { max-height: 90svh; overflow:auto; padding: 28px 20px; }
+  @media (max-width: 480px) {
+    .app { width: calc(100% - 18px); }
+    .card { border-radius: 24px; padding: 24px 18px; }
+    .cocker, .dexter-art { width: min(280px, 78vw); }
+    .quiz-answer { text-align: center; }
+    .pill { font-size: .9rem; }
+    button { width: 100%; margin: 6px 0; }
+    .primary, .secondary { width: 100%; }
+  }
+
+</style>
+</head>
+<body>
+<div class="app">
+  
+<section id="intro" class="card">
+  <div class="eyebrow">an extremely important announcement</div>
+  
+<svg class="dexter-art" viewBox="0 0 420 310" role="img" aria-label="A cute stylized brown English Cocker Spaniel illustration">
+  <defs>
+    <linearGradient id="fur" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#b86f36"/><stop offset="0.55" stop-color="#8a4b28"/><stop offset="1" stop-color="#5a2e1d"/>
+    </linearGradient>
+    <linearGradient id="cream" x1="0" x2="1">
+      <stop offset="0" stop-color="#f6dfbd"/><stop offset="1" stop-color="#d6a06d"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="210" cy="278" rx="125" ry="17" fill="#d9b6bd" opacity=".38"/>
+  <!-- long feathered ears -->
+  <path d="M105 83 C58 50 28 84 34 146 C39 199 61 242 91 235 C116 229 131 192 126 148 C123 119 119 96 105 83Z" fill="url(#fur)"/>
+  <path d="M315 83 C362 50 392 84 386 146 C381 199 359 242 329 235 C304 229 289 192 294 148 C297 119 301 96 315 83Z" fill="url(#fur)"/>
+  <!-- feather details -->
+  <path d="M70 92 C54 130 59 184 81 218 M92 82 C79 131 88 185 101 213" fill="none" stroke="#d18a4e" stroke-width="9" stroke-linecap="round" opacity=".65"/>
+  <path d="M350 92 C366 130 361 184 339 218 M328 82 C341 131 332 185 319 213" fill="none" stroke="#d18a4e" stroke-width="9" stroke-linecap="round" opacity=".65"/>
+  <!-- head -->
+  <path d="M102 103 C108 53 159 27 210 30 C261 27 312 53 318 103 C326 163 312 224 271 251 C252 264 231 270 210 270 C189 270 168 264 149 251 C108 224 94 163 102 103Z" fill="url(#fur)"/>
+  <!-- soft forehead blaze -->
+  <path d="M190 48 C176 75 180 101 188 121 C196 141 193 159 185 181 C178 203 190 228 210 239 C230 228 242 203 235 181 C227 159 224 141 232 121 C240 101 244 75 230 48 C217 39 203 39 190 48Z" fill="url(#cream)"/>
+  <!-- muzzle -->
+  <ellipse cx="210" cy="201" rx="73" ry="57" fill="#d9a979"/>
+  <ellipse cx="210" cy="202" rx="25" ry="19" fill="#241815"/>
+  <ellipse cx="202" cy="196" rx="7" ry="5" fill="#fff" opacity=".3"/>
+  <!-- big soft eyes -->
+  <ellipse cx="150" cy="137" rx="20" ry="26" fill="#241714"/>
+  <ellipse cx="270" cy="137" rx="20" ry="26" fill="#241714"/>
+  <ellipse cx="144" cy="128" rx="7" ry="8" fill="#fff"/>
+  <ellipse cx="264" cy="128" rx="7" ry="8" fill="#fff"/>
+  <!-- brows -->
+  <path d="M126 108 Q150 92 174 108" fill="none" stroke="#713b22" stroke-width="10" stroke-linecap="round"/>
+  <path d="M246 108 Q270 92 294 108" fill="none" stroke="#713b22" stroke-width="10" stroke-linecap="round"/>
+  <!-- happy tongue -->
+  <path d="M196 218 Q210 211 224 218 L221 249 Q210 267 199 249Z" fill="#db6679"/>
+  <path d="M210 219 L210 253" stroke="#a94258" stroke-width="2"/>
+  <!-- collar and tag -->
+  <path d="M123 239 Q210 279 297 239" fill="none" stroke="#d94f78" stroke-width="14"/>
+  <circle cx="210" cy="269" r="11" fill="#f2c550"/>
+</svg>
+
+  <h1>My dearest<br>human being,<br>Akshay.</h1>
+  <p class="subtitle">It feels like it has been <strong>97 years</strong> since I last saw you.</p>
+  <p>And yes, I am aware that in reality it has only been <strong>10 days</strong>.</p>
+  <p><strong>But 10 days is 10 days too many.</strong> I have therefore decided that drastic measures are required.</p>
+  <button class="primary" onclick="startQuiz()">Begin the extremely serious quiz →</button>
+  <div class="footer">Please answer honestly. Or, preferably, correctly.</div>
+</section>
+
+  <section id="house" class="card hidden">
+    <div class="eyebrow">question 02 of 02</div>
+    <h2>But there is a tiny problem...</h2>
+    <p>I regret to inform you that I do not currently possess a house suitable for hosting this excellent date night <strong>(given that my mother will be at the house).</strong></p>
+    <p><strong>Therefore, would you be willing to host us at your house in Ghatkopar?</strong></p>
+    <div class="pill-row">
+      <span class="pill">🏠🌿 your Ghatkopar house</span>
+      <span class="pill">🐶 Dexter</span>
+      <span class="pill">🍔🍟 McDonald’s</span>
+      <span class="pill">🎞️ movie</span>
+      <span class="pill">❤️ me + you</span>
+    </div>
+    <button class="primary" onclick="acceptHouse()">YES, obviously 💕</button>
+    <button class="secondary" onclick="houseNo()">Hmm... no 😭</button>
+    <br><button class="secondary" onclick="show('intro')">← Start over</button>
+  </section>
+
+  <section id="yes" class="card success hidden">
+    <div class="eyebrow">excellent decision</div>
+    <h2>IT'S A DATE. 🥹💗</h2>
+    <p><strong>I will see you on the 22nd of September.</strong></p>
+    <p>We’ll await further instructions from you on what time I can be there.</p>
+    <p>Movie. McDonald’s. Dexter. Makeout. Merry time. The whole agenda. 💌</p>
+    <p><strong>I love you very much. ❤️</strong></p>
+    <button class="primary" onclick="makeHearts()">I'M SO EXCITED →</button>
+    <button class="secondary" onclick="show('intro')">Relive the proposal</button>
+  </section>
+
+  <section id="no" class="card hidden">
+    <div class="emoji">😭😭😭</div>
+    <div class="eyebrow">devastating news</div>
+    <h2>As much as this pains me...</h2>
+    <p>I completely understand. I will bravely recover from this rejection.</p>
+    <p>But I <strong>cannot wait to do this date night with you</strong>, so please choose when we can make it happen. 🥺</p>
+    <div class="calendar-wrap">
+      <label for="date">When can you do it?</label>
+      <input id="date" type="date" />
+    </div>
+    <button class="primary" onclick="saveDate()">Lock it in 💗</button>
+    <button class="secondary" onclick="show('intro')">Start over</button>
+    <div id="dateResult" class="tiny"></div>
+  </section>
+</div>
+
+
+<div id="quiz" class="card hidden">
+  <div class="eyebrow" id="quizEyebrow">question 01 of 04</div>
+  <div class="quiz-progress"><span id="progressBar"></span></div>
+  <div class="emoji" id="quizEmoji">🧐</div>
+  <h2 id="quizQuestion"></h2>
+  <p id="quizSubtext"></p>
+  <div id="quizAnswers"></div>
+  <div id="quizResult" class="tiny"></div>
+</div>
+
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function show(id){
+    ['intro','quiz','house','yes','no'].forEach(x => $(x)?.classList.add('hidden'));
+    $(id)?.classList.remove('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  const questions = [
+    {
+      emoji:'🧐',
+      question:'Question 1: Is 10 days an acceptable amount of time to go without seeing me?',
+      sub:'Please consider your answer carefully. There are consequences.',
+      answers:[
+        ['I need to consult a lawyer.', false],
+        ['Absolutely not. This is outrageous.', true],
+        ['I suppose I can survive another 10 days.', false]
+      ]
+    },
+    {
+      emoji:'🍟',
+      question:'Question 2: What is the scientifically proven foundation of a good date night?',
+      sub:'There is, objectively, one superior answer.',
+      answers:[
+        ['A 47-slide PowerPoint presentation', false],
+        ['Doing our taxes together', false],
+        ['McDonald’s', true]
+      ]
+    },
+    {
+      emoji:'🐶',
+      question:'Question 3: Can Dexter be there too?',
+      sub:'I have telepathically checked with Dexter. He wants to be wherever Akshay is. (And, frankly, so do I.)',
+      answers:[
+        ['Only if he approves the movie.', false],
+        ['Obviously. Dexter has spoken. 🐾', true],
+        ['I need to discuss this with Dexter first.', false]
+      ]
+    },
+    {
+      emoji:'💋',
+      question:'Question 4: And finally, are you prepared for movie + McDonald’s + makeout + merry time?',
+      sub:'This is the final question. Choose wisely.',
+      answers:[
+        ['I would like to submit a formal objection.', false],
+        ['YES. Where do I sign?', true],
+        ['Obviously yes.', true]
+      ]
+    }
+  ];
+
+  let qIndex = 0;
+
+  function startQuiz(){
+    qIndex = 0;
+    show('quiz');
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    const q = questions[qIndex];
+    $('quizEyebrow').textContent = `question ${qIndex+1} of ${questions.length}`;
+    $('quizEmoji').textContent = q.emoji;
+    $('quizQuestion').textContent = q.question;
+    $('quizSubtext').textContent = q.sub;
+    $('progressBar').style.width = `${((qIndex+1)/questions.length)*100}%`;
+    $('quizResult').textContent = '';
+
+    const box = $('quizAnswers');
+    box.innerHTML = '';
+    q.answers.forEach(([text, correct]) => {
+      const b = document.createElement('button');
+      b.className = 'quiz-answer';
+      b.textContent = text;
+      b.onclick = () => answerQuestion(b, correct);
+      box.appendChild(b);
+    });
+  }
+
+  function answerQuestion(button, correct){
+    const buttons = [...$('quizAnswers').querySelectorAll('button')];
+    buttons.forEach(b => b.disabled = true);
+    button.classList.add(correct ? 'correct' : 'wrong');
+
+    if(correct){
+      $('quizResult').textContent = qIndex < questions.length-1
+        ? 'Correct. Frankly, I knew you had excellent judgement. →'
+        : 'Correct. You have successfully completed the examination. →';
+      setTimeout(() => {
+        if(qIndex < questions.length-1){ qIndex++; renderQuestion(); }
+        else show('house');
+      }, 850);
+    } else {
+      $('quizResult').textContent = 'Interesting answer. Unfortunately, the committee has rejected it. Please reconsider. 😭';
+      setTimeout(() => {
+        buttons.forEach(b => { b.disabled=false; b.classList.remove('wrong'); });
+        $('quizResult').textContent = '';
+      }, 1000);
+    }
+  }
+
+  function acceptHouse(){
+    show('yes');
+    for(let i=0;i<22;i++){
+      const b=document.createElement('div');
+      b.className='balloon';
+      b.style.left=(Math.random()*100)+'vw';
+      b.style.animationDelay=(Math.random()*4)+'s';
+      b.style.animationDuration=(5+Math.random()*5)+'s';
+      document.body.appendChild(b);
+      setTimeout(()=>b.remove(),12000);
+    }
+    makeHearts();
+  }
+
+  function houseNo(){
+    show('no');
+    sadConfetti();
+  }
+
+  function saveDate(){
+    const d=$('date').value;
+    if(!d){ $('dateResult').textContent='You have to choose a date, date-night applicant 🥺'; return; }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const date=new Date(d+'T12:00:00');
+    if(date < today){ $('dateResult').textContent='That date has already happened 😭 Please choose a future date.'; return; }
+    const pretty=date.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+    $('dateResult').textContent='Perfect. I have emotionally reserved '+pretty+' for us. 💗';
+    makeHearts();
+  }
+
+  function sadConfetti(){
+    const emojis=['😭','🥺','💔','😔','😭','💧'];
+    for(let i=0;i<16;i++){
+      const e=document.createElement('div');
+      e.className='heart';
+      e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+      e.style.left=(5+Math.random()*90)+'vw';
+      e.style.top=(55+Math.random()*30)+'vh';
+      e.style.fontSize=(20+Math.random()*24)+'px';
+      document.body.appendChild(e);
+      setTimeout(()=>e.remove(),2700);
+    }
+  }
+
+  function makeHearts(){
+    for(let i=0;i<24;i++){
+      const e=document.createElement('div');
+      e.className='heart';
+      e.textContent=['💗','💕','💖','✨','🥹'][Math.floor(Math.random()*5)];
+      e.style.left=(5+Math.random()*90)+'vw';
+      e.style.top=(55+Math.random()*35)+'vh';
+      e.style.fontSize=(20+Math.random()*26)+'px';
+      document.body.appendChild(e);
+      setTimeout(()=>e.remove(),2700);
+    }
+  }
+</script>
+</body>
+</html>
